@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 
+import com.firebase.client.Firebase;
 import com.mike.firebaseapp.dummy.PersonContent;
 
 import java.util.List;
@@ -30,6 +31,8 @@ public class ItemListActivity extends AppCompatActivity implements PersonContent
     private static final String TAG = ItemListActivity.class.getSimpleName();
 
     private static final int REQUEST_DETAILS = 100;
+
+    private Firebase mFirebaseRef;
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -71,6 +74,8 @@ public class ItemListActivity extends AppCompatActivity implements PersonContent
                 }
             }
         });
+
+        mFirebaseRef = new Firebase(getString(R.string.firebase_url));
 
         View recyclerView = findViewById(R.id.item_list);
         assert recyclerView != null;

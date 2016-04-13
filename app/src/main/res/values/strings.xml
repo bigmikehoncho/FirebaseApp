@@ -2,6 +2,8 @@
     <string name="app_name">Firebase App</string>
     <string name="title_item_detail">Person Detail</string>
 
+    <string name="firebase_url">https://shining-fire-8756.firebaseio.com/</string>
+
     <string name="name">%1$s %2$s</string>
     <string name="first_name">First Name:</string>
     <string name="last_name">Last Name:</string>
