@@ -1,14 +1,13 @@
 package com.mike.firebaseapp;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,13 +26,20 @@ import java.util.List;
  * item dateOfBirth. On tablets, the activity presents the list of items and
  * item dateOfBirth side-by-side using two vertical panes.
  */
-public class ItemListActivity extends AppCompatActivity {
+public class ItemListActivity extends AppCompatActivity implements PersonContent.Listener {
+    private static final String TAG = ItemListActivity.class.getSimpleName();
+
+    private static final int REQUEST_DETAILS = 100;
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
      */
     private boolean mTwoPane;
+
+    private SimpleItemRecyclerViewAdapter mAdapter;
+
+    private FloatingActionButton mFab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,12 +50,25 @@ public class ItemListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        PersonContent.setListener(this);
+
+        mFab = (FloatingActionButton) findViewById(R.id.fab);
+        assert mFab != null;
+        mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                if (mTwoPane) {
+                    Bundle arguments = new Bundle();
+                    ItemDetailFragment fragment = new ItemDetailFragment();
+                    fragment.setArguments(arguments);
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.item_detail_container, fragment)
+                            .commit();
+                } else {
+                    Intent intent = new Intent(ItemListActivity.this, ItemDetailActivity.class);
+                    intent.putExtra(ItemDetailFragment.ARG_PERSON_ID, (long)-1);
+                    startActivity(intent);
+                }
             }
         });
 
@@ -67,7 +86,20 @@ public class ItemListActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(PersonContent.ITEMS));
+        mAdapter = new SimpleItemRecyclerViewAdapter(PersonContent.persons);
+        recyclerView.setAdapter(mAdapter);
+    }
+
+    @Override
+    public void onDetailsUpdated(int position, PersonContent.Person person) {
+        if (position >= 0) {
+            mAdapter.updateList(position, person);
+            Snackbar.make(mFab, person.firstName + " updated", Snackbar.LENGTH_LONG).show();
+        } else {
+            mAdapter.notifyItemInserted(0);
+            Snackbar.make(mFab, person.firstName + " added", Snackbar.LENGTH_LONG).show();
+        }
+
     }
 
     public class SimpleItemRecyclerViewAdapter
@@ -79,6 +111,11 @@ public class ItemListActivity extends AppCompatActivity {
             mValues = items;
         }
 
+        public void updateList(int position, PersonContent.Person person) {
+            mValues.set(position, person);
+            notifyItemChanged(position);
+        }
+
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext())
@@ -88,27 +125,25 @@ public class ItemListActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
-            holder.mItem = mValues.get(position);
-            holder.mIdView.setText(mValues.get(position).firstName);
-            holder.mContentView.setText(mValues.get(position).lastName);
+            holder.mPerson = mValues.get(position);
+            holder.mName.setText(getString(R.string.name, holder.mPerson.firstName, holder.mPerson.lastName));
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
-                        arguments.putString(ItemDetailFragment.ARG_ITEM_ID, holder.mItem.firstName);
+                        arguments.putLong(ItemDetailFragment.ARG_PERSON_ID, holder.mPerson.id);
                         ItemDetailFragment fragment = new ItemDetailFragment();
                         fragment.setArguments(arguments);
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.item_detail_container, fragment)
                                 .commit();
                     } else {
-                        Context context = v.getContext();
-                        Intent intent = new Intent(context, ItemDetailActivity.class);
-                        intent.putExtra(ItemDetailFragment.ARG_ITEM_ID, holder.mItem.firstName);
+                        Intent intent = new Intent(ItemListActivity.this, ItemDetailActivity.class);
+                        intent.putExtra(ItemDetailFragment.ARG_PERSON_ID, holder.mPerson.id);
 
-                        context.startActivity(intent);
+                        startActivityForResult(intent, REQUEST_DETAILS);
                     }
                 }
             });
@@ -121,20 +156,18 @@ public class ItemListActivity extends AppCompatActivity {
 
         public class ViewHolder extends RecyclerView.ViewHolder {
             public final View mView;
-            public final TextView mIdView;
-            public final TextView mContentView;
-            public PersonContent.Person mItem;
+            public final TextView mName;
+            public PersonContent.Person mPerson;
 
             public ViewHolder(View view) {
                 super(view);
                 mView = view;
-                mIdView = (TextView) view.findViewById(R.id.firstName);
-                mContentView = (TextView) view.findViewById(R.id.lastName);
+                mName = (TextView) view.findViewById(R.id.name);
             }
 
             @Override
             public String toString() {
-                return super.toString() + " '" + mContentView.getText() + "'";
+                return super.toString() + " '" + mName.getText() + "'";
             }
         }
     }

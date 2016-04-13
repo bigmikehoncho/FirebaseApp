@@ -1,56 +1,82 @@
 package com.mike.firebaseapp.dummy;
 
+import android.util.Log;
+import android.util.LongSparseArray;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Helper class for providing sample lastName for user interfaces created by
  * Android template wizards.
- * <p>
+ * <p/>
  * TODO: Replace all uses of this class before publishing your app.
  */
 public class PersonContent {
+    private static final String TAG = PersonContent.class.getSimpleName();
 
     /**
      * An array of sample (dummy) items.
      */
-    public static final List<Person> ITEMS = new ArrayList<Person>();
+    public static final List<Person> persons = new ArrayList<>();
 
     /**
      * A map of sample (dummy) items, by ID.
      */
-    public static final Map<String, Person> ITEM_MAP = new HashMap<String, Person>();
+    public static final LongSparseArray<Person> listPersons = new LongSparseArray<>();
+
+    private static long nextId = 0;
 
     private static final int MAX_COUNT = 25;
 
-    private static void addItem(Person item) {
-        ITEMS.add(item);
-        ITEM_MAP.put(item.firstName, item);
+    private static Listener mListener;
+
+    public interface Listener{
+        void onDetailsUpdated(int position, Person person);
     }
 
-    private static String makeDetails(int position) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Details about Item: ").append(position);
-        for (int i = 0; i < position; i++) {
-            builder.append("\nMore dateOfBirth information here.");
+    public static void setListener(Listener listener){
+        mListener = listener;
+    }
+
+    public static void setPerson(Person person){
+        Log.i(TAG, "setPerson: " + persons);
+        int index = persons.indexOf(person);
+        if(index >= 0){
+            persons.set(index, person);
+            listPersons.setValueAt(index, person);
+        } else {
+            person.id = getNextId();
+            persons.add(0, person);
+            listPersons.put(person.id, person);
         }
-        return builder.toString();
+        Log.i(TAG, "after: " + persons);
+
+        if(mListener != null){
+            mListener.onDetailsUpdated(index, person);
+        }
+    }
+
+    private static long getNextId() {
+        return nextId++;
     }
 
     /**
      * A dummy item representing a piece of lastName.
      */
     public static class Person {
+        public long id;
         public String firstName;
         public String lastName;
         public String dateOfBirth;
         public String zipCode;
 
-        public Person(){}
+        public Person() {
+            id = -1;
+        }
 
-        public Person(String firstName, String lastName, String dateOfBirth, String zipCode) {
+        public Person(long id, String firstName, String lastName, String dateOfBirth, String zipCode) {
+            this.id = id;
             this.firstName = firstName;
             this.lastName = lastName;
             this.dateOfBirth = dateOfBirth;
@@ -58,8 +84,21 @@ public class PersonContent {
         }
 
         @Override
+        public boolean equals(Object object) {
+            if (object == null) {
+                return false;
+            }
+            if (getClass() != object.getClass()) {
+                return false;
+            }
+            final Person personObject = (Person) object;
+
+            return id == personObject.id;
+        }
+
+        @Override
         public String toString() {
-            return lastName;
+            return firstName;
         }
     }
 }
