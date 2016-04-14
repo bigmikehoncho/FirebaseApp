@@ -37,8 +37,6 @@ public class ItemDetailFragment extends Fragment implements View.OnClickListener
      */
     public static final String ARG_PERSON_ID = "person_id";
 
-    public static final String EXTRA_PERSON_ID = "person_id";
-
     /**
      * The dummy lastName this fragment is presenting.
      */

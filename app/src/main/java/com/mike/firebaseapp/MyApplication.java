@@ -6,7 +6,8 @@ import android.content.Context;
 import com.firebase.client.Firebase;
 
 /**
- * Created by Mike on 4/13/2016.
+ * Application class to instantiate Firebase
+ *
  */
 public class MyApplication extends Application {
     private static MyApplication sInstance;

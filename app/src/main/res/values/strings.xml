@@ -12,6 +12,10 @@
     <string name="date_of_birth_hint">Date of Birth</string>
     <string name="zip_code_hint">Zip Code</string>
 
+    <string name="person_added">%1$s added</string>
+    <string name="person_updated">%1$s updated</string>
+    <string name="person_removed">%1$s removed</string>
+
     <!--Warnings-->
     <string name="invalid_person">You need to supply at least a first name</string>
 

@@ -11,28 +11,24 @@ import android.support.design.widget.FloatingActionButton;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 
-import com.firebase.client.Firebase;
 import com.mike.firebaseapp.pojo.PersonContent;
 
 import java.util.List;
 
 /**
- * An activity representing a list of Items. This activity
+ * An activity representing a list of Persons. This activity
  * has different presentations for handset and tablet-size devices. On
- * handsets, the activity presents a list of items, which when touched,
+ * handsets, the activity presents a list of persons, which when touched,
  * lead to a {@link ItemDetailActivity} representing
- * item dateOfBirth. On tablets, the activity presents the list of items and
- * item dateOfBirth side-by-side using two vertical panes.
+ * Person. On tablets, the activity presents the list of persons and
+ * Person side-by-side using two vertical panes.
  */
 public class ItemListActivity extends AppCompatActivity implements PersonContent.Listener {
     private static final String TAG = ItemListActivity.class.getSimpleName();
-
-    private static final int REQUEST_DETAILS = 100;
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -40,7 +36,7 @@ public class ItemListActivity extends AppCompatActivity implements PersonContent
      */
     private boolean mTwoPane;
 
-    private SimpleItemRecyclerViewAdapter mAdapter;
+    private PersonRecyclerViewAdapter mAdapter;
 
     private FloatingActionButton mFab;
 
@@ -88,41 +84,40 @@ public class ItemListActivity extends AppCompatActivity implements PersonContent
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        mAdapter = new SimpleItemRecyclerViewAdapter(PersonContent.persons);
+        mAdapter = new PersonRecyclerViewAdapter(PersonContent.persons);
         recyclerView.setAdapter(mAdapter);
     }
 
+    /*BEGIN PersonContent callbacks*/
     @Override
     public void onPersonUpdated(int position, PersonContent.Person person) {
-        if (position >= 0) {
-            mAdapter.updateList(position, person);
-            Snackbar.make(mFab, person.firstName + " updated", Snackbar.LENGTH_LONG).show();
-        } else {
-            mAdapter.notifyItemInserted(0);
-            Snackbar.make(mFab, person.firstName + " added", Snackbar.LENGTH_LONG).show();
-        }
+        mAdapter.updateList(position);
+        Snackbar.make(mFab, getString(R.string.person_updated, person.firstName), Snackbar.LENGTH_LONG).show();
     }
 
     @Override
-    public void onPeopleUpdated(List<PersonContent.Person> people) {
-        mAdapter.setList();
+    public void onPersonAdded(PersonContent.Person person) {
+        mAdapter.notifyItemInserted(0);
+        Snackbar.make(mFab, getString(R.string.person_added, person.firstName), Snackbar.LENGTH_LONG).show();
     }
 
-    public class SimpleItemRecyclerViewAdapter
-            extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
+    @Override
+    public void onPersonRemoved(int position, PersonContent.Person person) {
+        mAdapter.notifyItemRemoved(position);
+        Snackbar.make(mFab, getString(R.string.person_removed, person.firstName), Snackbar.LENGTH_LONG).show();
+    }
+    /*END PersonContent callbacks*/
+
+    public class PersonRecyclerViewAdapter
+            extends RecyclerView.Adapter<PersonRecyclerViewAdapter.ViewHolder> {
 
         private final List<PersonContent.Person> mValues;
 
-        public SimpleItemRecyclerViewAdapter(List<PersonContent.Person> items) {
+        public PersonRecyclerViewAdapter(List<PersonContent.Person> items) {
             mValues = items;
         }
 
-        public void setList(){
-            notifyDataSetChanged();
-        }
-
-        public void updateList(int position, PersonContent.Person person) {
-            mValues.set(position, person);
+        public void updateList(int position) {
             notifyItemChanged(position);
         }
 
@@ -153,7 +148,7 @@ public class ItemListActivity extends AppCompatActivity implements PersonContent
                         Intent intent = new Intent(ItemListActivity.this, ItemDetailActivity.class);
                         intent.putExtra(ItemDetailFragment.ARG_PERSON_ID, holder.mPerson.id);
 
-                        startActivityForResult(intent, REQUEST_DETAILS);
+                        startActivity(intent);
                     }
                 }
             });
@@ -161,7 +156,7 @@ public class ItemListActivity extends AppCompatActivity implements PersonContent
                 @Override
                 public void onClick(View v) {
                     PersonContent.removePerson(holder.mPerson);
-                    notifyItemRemoved(holder.getAdapterPosition());
+
                 }
             });
         }
