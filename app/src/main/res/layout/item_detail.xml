@@ -1,7 +1,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
 
     <LinearLayout
         android:id="@+id/item_detail"
@@ -46,13 +47,13 @@
             android:text="@string/date_of_birth"
             android:textAppearance="?attr/textAppearanceListItem" />
 
-        <EditText
+        <TextView
             android:id="@+id/date_of_birth"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/text_margin"
             android:hint="@string/date_of_birth_hint"
-            android:inputType="date" />
+            android:textSize="16sp"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -66,6 +67,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/text_margin"
             android:hint="@string/zip_code_hint"
+            android:maxLength="5"
             android:inputType="number" />
 
     </LinearLayout>
